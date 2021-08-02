@@ -1,72 +1,27 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta hrrp-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!-- for mobile phones responsiveness -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<!-- The header has been moved to fragments.html 
 
-<title>Create New User</title>
+NB ${pageTitle} is used here because it is stated in the 
+user controller that the pageTitle should be pass the title in the 
+page head tag
+-->
 
-<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
-<script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
-<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
-</head>
+<head th:replace="fragments :: page_head(${pageTitle})"></head>
 <body>
 <div class="container-fluid">
-	<div>
-		<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-		<!-- logo -->
-		<a class="navbar-brand" th:href="@{/}">
-			<img alt="" th:src="@{/images/ShopmeAdminSmall.png}">
-		</a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse"
-		data-target="#topNavbar">
-			<span class="navbar-toggler-icon"> </span>
-		</button>
-		<!-- menu items collapse bar-->
-		<div class="collapse navbar-collapse" id="topNavbar">
-			<ul class="navbar-nav">
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/users}">Users</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/categories}">Categories</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/products}">Products</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/customers}">Customers</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/shipping}">Shipping</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/orders}">Orders</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/report}">Sales Report</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/articles}">Articles</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/menu}">Menus</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/settings}">Settings</a>
-				</li>
-				
-			</ul>
-		</div>
-		</nav>
+	<div th:replace="navigation :: menu">
 	</div>
 	<div>
-		<h2>Manage Users | Create New User</h2>
-		
+		<!-- <h2>Manage Users | Create New User</h2> -->
+		<h2>Manage Users | [[${pageTitle}]]</h2>
 	</div>
 	<form th:action="@{/users/save}" method="post" style="max-width: 700px; margin: 0 auto;"
+		enctype="multipart/form-data"
 		th:object="${user}" onsubmit="return checkEmailUnique(this);">
+		<!-- hidden field. ID of the user object. thus the ID of the user being edited-->
+		<input type="hidden" th:field="*{id}">
+		
 		<div class="border border-secondary rounded p-3">
 			<div class="form-group row">
 				<label class="col-sm-4 col-form-label">Email:</label>
@@ -89,7 +44,13 @@
 			<div class="form-group row">
 				<label class="col-sm-4 col-form-label">Password:</label>
 				<div class="col-sm-8">
-					<input type="password" class="form-control" th:field="*{password}" required="required" minlength="8" maxlength="20">
+				<!-- if user id is null meaning new user is being created and thus this field is required 
+				and the form is in the create new user mode-->
+					<input th:if="${user.id == null}" type="password" class="form-control" th:field="*{password}" required="required" minlength="8" maxlength="20">
+				
+				<!-- if the user id is not null it means the form is in the edit mode and therefore this field is not required -->
+					<input th:if="${user.id != null}" type="password" class="form-control" th:field="*{password}" minlength="8" maxlength="20">
+				
 				</div>
 			</div>
 			<div class="form-group row">
@@ -113,6 +74,29 @@
 					<input type="checkbox" th:field="*{enabled}">
 				</div>
 			</div>
+			
+			<div class="form-group row">
+				<label class="col-sm-4 col-form-label">Photos:</label>
+				<div class="col-sm-8">
+				
+				<!-- hidden field that store photos -->
+				<input type="hidden" th:field="*{photos}">
+				<!-- accept indicate it should accept only jpeg and png file -->
+					<input type="file" id="fileImage" name="image" accept="image/png,image/jpeg"
+					class="mb-2" />
+					
+					<!--  display the thumbnail of the images -->
+					<!-- <img alt="Photos preview" th:src="@{/images/default-user.png}" id="thumbnail"
+					class="img-fluid" style="width:100px" /> -->
+					
+					<!-- th:src="@{${user.photosImagePath}}" will display the image on the form when you click on edit button -->
+					<img alt="Photos preview" th:src="@{${user.photosImagePath}}" id="thumbnail"
+					class="img-fluid" style="width:100px" />
+				</div>
+			</div>
+			
+			
+			
 			
 			<div class="text-center">
 				<input type="submit" value="Save" class="btn btn-primary m-3">
@@ -138,17 +122,14 @@
 		</div>
 	</div>
 	
-	<div class="text-center">
-		<p>Shopme Control Panel - Copyright &copy; Shopme</p>
-	</div>
+	<div th:replace="fragments :: footer"></div>
  </div>
  <script type="text/javascript">
- /* close the create new user page*/
- 	$(document).ready(function(){
- 		$("#buttonCancel").on("click", function(){
- 			window.location="[[@{/users}]]";
- 		});
- 	});
+ 
+ //direct the page back to the users page when the cancel button is click
+ // code for cancel button has been move to common_form.js file
+ 
+ moduleURL = "[[@{/users}]]";
  	
  	/*function to check if email is unique*/
  	
@@ -160,8 +141,9 @@ function checkEmailUnique(form){
  		/*$("email") refers to the th:field value of the email field*/
  		
  		userEmail = $("#email").val(); 
+ 		userId = $("#id").val();
  		csrfValue = $("input[name='_csrf']").val();
- 		params = {email: userEmail, _csrf: csrfValue};
+ 		params = {id: userId, email: userEmail, _csrf: csrfValue};
  		
  		$.post(url, params, function(response){
  			if(response == "OK"){
@@ -186,5 +168,6 @@ function checkEmailUnique(form){
  	
  	
  </script>
+ <script th:src="@{/js/common_form.js}"></script>
 </body>
 </html>

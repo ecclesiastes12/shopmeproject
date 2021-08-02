@@ -1,9 +1,11 @@
-package com.shopme.admin.user;
+package com.shopme.admin.user.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.shopme.admin.user.UserService;
 
 @RestController
 public class UserRestController {
@@ -12,12 +14,12 @@ public class UserRestController {
 	UserService service;
 	
 	@PostMapping("/users/check_email")
-	public String checkDuplicateEmail(@Param("email") String email) {
+	public String checkDuplicateEmail(@Param("id") Integer id, @Param("email") String email) {
 		//same as if else statement 
 		/*
 		 * if(service.isEmailUnique(email)) { return "OK"; }else { return "Duplicated";
 		 * }
 		 */
-		return service.isEmailUnique(email) ? "OK" : "Duplicated";
+		return service.isEmailUnique(id,email) ? "OK" : "Duplicated";
 	}
 }
